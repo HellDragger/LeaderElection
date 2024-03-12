@@ -38,22 +38,22 @@ This repository contains Java files implementing a ring election algorithm. The 
 
 - The program utilizes random generation for assigning unique IDs to processors, setting wake-up rounds, and simulating the network topology.
 - The ring election algorithm ensures the eventual election of a leader even in the presence of failures or message loss within the network.
-- Being a asynchronous network, the determination of number of rounds is very difficult. Hence, in the program we utilize a boolean flag to terminate the program after the election of leader node.
+- Being an asynchronous network, determining the number of rounds required for termination is challenging. Therefore, in the program, we utilize a boolean flag to terminate the program after the election of the leader node.
 
-## Time Complexity:
+## Time Complexity
 - The time complexity of this algorithm mainly depends on the number of rounds it takes for a leader to be elected.
 - In the worst-case scenario, each processor needs to wake up and participate in the communication rounds until the leader is elected.
 - Assuming each processor has a distinct start round `ri`, the maximum number of rounds required for a leader to be elected is bounded by the maximum value of `ri`.
 - Thus, the time complexity can be expressed as O(max(ri)), where `ri` represents the start rounds of all processors.
 
-## Message Complexity:
+## Message Complexity
 - In this algorithm, each processor communicates with its neighbor to exchange information about the maximum ID seen so far.
 - Since it's a ring-based algorithm, each processor sends messages to its adjacent processors.
 - In each round, every processor sends and receives one message, except for the final leader.
 - Therefore, the total number of messages exchanged is proportional to the number of processors (n).
 - Thus, the message complexity is O(n).
 
-## Measure of Correctness:
+## Measure of Correctness
 - The algorithm guarantees correctness by ensuring that each processor updates its maximum ID seen so far based on the messages received from its neighbors.
 - It also ensures termination by having a condition to break the loop and declare a leader once a processor identifies itself as having the maximum ID seen.
 - The termination condition `flag` ensures that the loop terminates when a leader is elected.
