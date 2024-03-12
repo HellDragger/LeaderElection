@@ -5,6 +5,7 @@ public class Processor {
     public int maxID;
     public int wake_up_round;
     public String status;
+    public int leaderID;
 
     public Processor(int ownID) {
         this.ownID = ownID;
@@ -53,5 +54,13 @@ public class Processor {
 
     public int getInID(){
         return inID;
+    }
+
+    public void setLeaderID(int leaderID){
+        this.leaderID = leaderID;
+    }
+
+    public int getLeaderID(){
+        return leaderID;
     }
 }
