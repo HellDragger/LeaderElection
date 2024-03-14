@@ -59,3 +59,49 @@ This repository contains Java files implementing a ring election algorithm. The 
 - The termination condition `flag` ensures that the loop terminates when a leader is elected.
 - Additionally, the algorithm prints the elected leader's information once the termination condition is met.
 - Hence, the correctness is ensured by the termination condition and the consistency in updating and comparing the maximum IDs among processors.
+
+# Assignment 3.2: Ring of Rings Leader Election
+
+## Introduction
+This assignment focuses on implementing a leader election algorithm in a distributed system represented by a ring of rings topology. The program simulates the election process where processors within each subring elect a leader, and then the main ring of processors elects a leader among the subring leaders. The algorithm ensures that the elected leader has the highest identifier among all processors.
+
+## Files Included
+1. **RingInterface.java**: This Java file contains the implementation of the leader election algorithm. It consists of classes and methods necessary for simulating the ring of rings topology, creating subrings, conducting leader elections within subrings, and finally, electing a leader for the main ring.
+2. **Processor.java**: This java file defines the basic properties of a processor as in previous program.
+
+## Compilation and Execution
+To compile and run the program, follow these steps:
+
+1. **Compilation**: Use a Java compiler to compile the `RingInterface.java` file. Open a terminal or command prompt, navigate to the directory containing the file, and execute the following command:
+   ```bash
+   javac RingInterface.java
+   javac Processor.java
+   ```
+   or
+   ```bash
+   javac Processor.java RingInterface.java
+   ```
+
+3. **Execution**: After successful compilation, run the program using the following command:
+   ```bash
+   java RingInterface
+   ```
+
+4. **User Input**: Follow the prompts to provide input interactively. Enter the number of processors and select the interface nodes option according to your preference.
+
+5. **Output**: The program will display information about the main ring and any created subrings. It will also print details of each processor in the main ring after the leader election process. Additionally, the total messages sent and the total rounds required for the election process will be displayed.
+
+## Measure of Correctness
+To ensure the correctness of the program, you can verify the following:
+- The leader elected by the main ring should have the highest ID among all processors.
+- Each processor's `nextID`, `maxID`, `inID`, status, and leader ID should be correctly updated throughout the algorithm execution.
+- The algorithm should terminate and output the elected leader within a reasonable number of rounds.
+
+## Message Complexity
+The message complexity of the algorithm refers to the total number of messages exchanged among processors during the leader election process. The program displays the total messages sent at the end of execution, providing insight into the communication overhead.
+
+## Time Complexity in Terms of Rounds
+The time complexity of the algorithm is expressed in terms of rounds required for the leader election process to converge. Each round involves processors exchanging messages and updating their states based on the received information. The program calculates and displays the total rounds required for the election process, aiding in analyzing the time complexity.
+
+## Conclusion
+Assignment 3.2 provides an implementation of the leader election algorithm in a ring of rings topology. By following the instructions provided in this README, you can compile and run the program to observe the election process and evaluate its correctness, message complexity, and time complexity.
