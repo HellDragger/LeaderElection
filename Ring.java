@@ -167,8 +167,29 @@ public class Ring {
                 System.out.println("Leader info:\nID: "+ processor.getOwnID() + "\nStatus: "+processor.getStatus());
                 System.out.println("________________________");
             }
-            processor.getStatus();
         }
+        int leaderID = 0;
+
+        // Find the leader processor
+        for (Processor processor : processors) {
+            if (processor.getStatus().equals("Leader")) {
+                leaderID = processor.getOwnID();
+                break; // Exit the loop once leader is found
+            }
+        }
+        round = round +1;
+        // Set leader ID for all processors
+        if (leaderID != 0) {
+            for (Processor processor : processors) {
+                processor.setLeaderID(leaderID);
+                
+            }
+        } else {
+            System.out.println("No leader found. Leader ID not set.");
+        }
+        
+        System.out.println("Process terminated after:"+ round+" rounds after informing all processors about elected leader");
+
         scanner.close();
     }
 }
