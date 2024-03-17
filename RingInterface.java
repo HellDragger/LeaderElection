@@ -7,6 +7,7 @@ import java.util.Scanner;
 public class RingInterface {
     static int[] rounds; // Static array to store rounds for each subring
     static int roundIndex = 0;
+    static int messageCount = 0;
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -30,7 +31,7 @@ public class RingInterface {
         for (int i = 0; i < numProcessors; i++) {
             int randomID;
             do {
-                randomID = new Random().nextInt(10 * numProcessors) + 1;
+                randomID = new Random().nextInt(numProcessors * (numProcessors + 1)) + 1;
             } while (uniqueMainRingIDs.contains(randomID));
             uniqueMainRingIDs.add(randomID);
 
@@ -58,16 +59,16 @@ public class RingInterface {
         }
 
         // Process interface nodes and create subrings
-        int messageCount = 0; // Counter for messages sent
+        
         for (int i = 0; i < numProcessors; i++) {
             if (mainRingProcessors[i].getInterface()) {
                 // Create a subring
                 ArrayList<Processor> subringProcessors = createSubring(uniqueMainRingIDs, numProcessors);
-                messageCount += subringProcessors.size(); // Count messages for subring creation
-                messageCount += conductLeaderElection(subringProcessors, mainRingProcessors[i]);
+                // messageCount += subringProcessors.size(); // Count messages for subring creation
+                conductLeaderElection(subringProcessors, mainRingProcessors[i]);
                 // Print subring information
-                System.out.println("\nSubring for Interface Processor " + mainRingProcessors[i].getOwnID());
-                printSubring(subringProcessors);
+                // System.out.println("\nSubring for Interface Processor " + mainRingProcessors[i].getOwnID());
+                // printSubring(subringProcessors);
 
             }
         }
@@ -110,6 +111,8 @@ public class RingInterface {
             processor.setStatus("Awake");
         }
 
+        int maximumID = 0;
+        maximumID = mainRingProcessors[0].getOwnID();
         while (true) {
             boolean leaderFound = false;
             for (int i = 0; i < mainRingProcessors.length; i++) {
@@ -120,17 +123,21 @@ public class RingInterface {
                     for (Processor processor2 : mainRingProcessors) {
                         if (processor2.getOwnID() == nextID) {
                             processor2.setInID(max);
-                            messageCount++;
                         }
                     }
-                    // Check for leader condition (maxID < inID or maxID=inID=ownID)
-                    if (processor.getMaxID() < processor.getInID()) {
-                        processor.setMaxID(processor.getInID()); // Update maxID with higher value
-                    } else if (processor.getMaxID() == processor.getInID()
-                            && processor.getMaxID() == processor.getOwnID()) {
-                        processor.setStatus("Leader"); // Found the leader
-                        leaderFound = true;
-                        break;
+                    
+                    for (Processor processor2 : mainRingProcessors) {
+                        maximumID = Math.max(processor2.getOwnID(), maximumID);
+                    }
+                    for (Processor processor2 : mainRingProcessors) {
+                        processor2.setMaxID(maximumID);
+                    }
+                    if(!leaderFound){
+                        if(processor.getOwnID() == maximumID){
+                            processor.setStatus("Leader");
+                            leaderFound = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -144,7 +151,6 @@ public class RingInterface {
                 }
                 for (Processor processor : mainRingProcessors) {
                     processor.setLeaderID(leader);
-                    messageCount++;
                 }
                 round += 1;
                 // System.out.println("Main ring ID changed to:
@@ -154,24 +160,40 @@ public class RingInterface {
                 round++; // Proceed to the next round
             }
         }
+        
+        // Print main ring processor details after leader
         for (Processor processor : mainRingProcessors) {
-            System.out.println("ownID: " + processor.getOwnID() +
+            System.out.println("ID: " + processor.getOwnID() +
                     ", nextID: " + processor.getNextID() +
                     ", maxID: " + processor.getMaxID() +
-                    ", inID: " + processor.getInID() +
                     ", Status: " + processor.getStatus() +
                     ", Leader ID: " + processor.getLeaderID());
         }
-
+        round = numProcessors + 2;
+        messageCount += round * numProcessors;
         // Print total messages sent
         System.out.println("\nTotal Messages Sent: " + messageCount);
-        System.out.println("\nTotal Rounds Required: " + (round+maxElement));
+        System.out.println("\nTotal Rounds Required: " + (round + maxElement));
+        for (Processor processor : mainRingProcessors) {
+            if(processor.getStatus().equals("Leader") && processor.getOwnID() == processor.getMaxID()){
+                System.out.println("\nLeader Processor in "+numProcessors+" processors\nID: " + processor.getOwnID() +
+                ", nextID: " + processor.getNextID() +
+                ", maxID: " + processor.getMaxID() +
+                ", Status: " + processor.getStatus());
+            }
+        }
+        System.out.println("\nMaximum in main ring:- "+maximumID);
+        for (Processor processor : mainRingProcessors) {
+            if(processor.getStatus().equals("Leader")){
+                System.out.println("\nElected leader ID: "+processor.getOwnID());
+            }
+        }
 
         scanner.close();
     }
 
     private static ArrayList<Processor> createSubring(HashSet<Integer> uniqueMainRingIDs, int numProcessors) {
-        int numProcessorsInSubring = new Random().nextInt(numProcessors - 1) + 1; // 1 to numProcessors-1
+        int numProcessorsInSubring = new Random().nextInt(numProcessors) + 1; // 1 to numProcessors
         ArrayList<Processor> subringProcessors = new ArrayList<>();
 
         // Create a HashMap to store unique IDs for the subring
@@ -182,7 +204,7 @@ public class RingInterface {
         for (int i = 0; i < numProcessorsInSubring; i++) {
             int randomID;
             do {
-                randomID = new Random().nextInt(10 * numProcessors);
+                randomID = new Random().nextInt(numProcessors * (numProcessors + 1));
             } while (uniqueSubringIDs.containsKey(randomID));
             uniqueSubringIDs.put(randomID, true);
 
@@ -209,13 +231,20 @@ public class RingInterface {
             }
             subringProcessors.get(i).setNextID(nextID);
         }
+        int round = numProcessorsInSubring + 2;
+        if (roundIndex < rounds.length) {
+            rounds[roundIndex++] = round; // Append round to the array
+        } else {
+            System.out.println("Warning: Rounds array is full. Cannot store rounds for additional subrings.");
+        }
+        messageCount += (round * numProcessorsInSubring);
 
         return subringProcessors;
     }
 
     private static void printSubring(ArrayList<Processor> subringProcessors) {
         for (Processor processor : subringProcessors) {
-            System.out.println("ownID: " + processor.getOwnID() +
+            System.out.println("ID: " + processor.getOwnID() +
                     ", nextID: " + processor.getNextID() +
                     ", maxID: " + processor.getMaxID() +
                     ", inID: " + processor.getInID() +
@@ -223,8 +252,7 @@ public class RingInterface {
         }
     }
 
-    private static int conductLeaderElection(ArrayList<Processor> subringProcessors, Processor mainRingProcessors) {
-        int messageCount = 0; // Counter for messages sent within this subring election
+    private static void conductLeaderElection(ArrayList<Processor> subringProcessors, Processor mainRingProcessors) {
 
         // Initialize round and set status to "Awake" at round 1
         int round = 1;
@@ -242,7 +270,6 @@ public class RingInterface {
                     for (Processor processor2 : subringProcessors) {
                         if (processor2.getOwnID() == nextID) {
                             processor2.setInID(max);
-                            messageCount++;
                         }
                     }
                     // Check for leader condition (maxID < inID or maxID=inID=ownID)
@@ -264,7 +291,6 @@ public class RingInterface {
                         leader = processor.getOwnID();
                     }
                     processor.setLeaderID(leader);
-                    messageCount++;
                 }
                 round += 1;
                 mainRingProcessors.setOwnID(leader);
@@ -273,11 +299,5 @@ public class RingInterface {
                 round++; // Proceed to the next round
             }
         }
-        if (roundIndex < rounds.length) {
-            rounds[roundIndex++] = round; // Append round to the array
-        } else {
-            System.out.println("Warning: Rounds array is full. Cannot store rounds for additional subrings.");
-        }
-        return messageCount;
     }
 }
