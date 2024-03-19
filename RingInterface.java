@@ -148,6 +148,9 @@ public class RingInterface {
                     if (processor.getStatus().equals("Leader")) {
                         leader = processor.getOwnID();
                     }
+                    else {
+                        processor.setStatus("Terminated");
+                    }
                 }
                 for (Processor processor : mainRingProcessors) {
                     processor.setLeaderID(leader);
@@ -289,6 +292,9 @@ public class RingInterface {
                 for (Processor processor : subringProcessors) {
                     if (processor.getStatus().equals("Leader")) {
                         leader = processor.getOwnID();
+                    }
+                    else {
+                        processor.setStatus("Terminated");
                     }
                     processor.setLeaderID(leader);
                 }
